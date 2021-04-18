@@ -1,0 +1,23 @@
+[Unit]
+Description=Cellular Service
+After=network.target
+RequiresMountsFor=/etc /usr
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/systemd/cellular.conf
+RuntimeDirectory=mavproxy
+RuntimeDirectoryMode=0700
+ExecStartPre=/bin/sleep 5
+ExecStart=/usr/local/bin/cellular-start.sh
+StandardOutput=journal
+StandardError=journal
+Restart=on-failure
+RestartSec=10
+StartLimitInterval=100
+StartLimitBurst=5
+TimeoutStartSec=0
+TimeoutStopSec=5
+
+[Install]
+WantedBy=multi-user.target
