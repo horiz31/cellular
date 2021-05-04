@@ -22,7 +22,7 @@ provide your credentials, then continue:
 make -C $HOME/cellular install
 ```
 
-This will pull in the necessary dependencies, provision the system and start the cellular service  
+This will pull in the necessary dependencies, install the sierra wireless drivers, provision the system and start the cellular service  
 
 To make future changes in the provisioning:
 ```
