@@ -52,7 +52,7 @@ install: dependencies
 	@( for c in stop disable ; do $(SUDO) systemctl $${c} $(KILLSERVICES) ; done ; true )
 	# NB: remove conflicting packages
 	@if [ ! -z "$(KILLPKGS)" ] ; then $(SUDO) apt-get purge -y $(KILLPKGS) ; fi
-	$(MAKE) --no-print-directory -B $(SYSCFG)/cellular.conf $(DRY_RUN)
+	@$(MAKE) --no-print-directory -B $(SYSCFG)/cellular.conf $(DRY_RUN)
 	@$(MAKE) --no-print-directory enable
 	
 provision:	
