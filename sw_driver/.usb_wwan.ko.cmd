@@ -1,0 +1,1 @@
+cmd_/home/horizon31/cellular/sw_driver/usb_wwan.ko := ld -EL -r  -T ./scripts/module-common.lds -T ./arch/arm64/kernel/module.lds --build-id  -o /home/horizon31/cellular/sw_driver/usb_wwan.ko /home/horizon31/cellular/sw_driver/usb_wwan.o /home/horizon31/cellular/sw_driver/usb_wwan.mod.o ;  true

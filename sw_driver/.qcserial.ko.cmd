@@ -1,0 +1,1 @@
+cmd_/home/horizon31/cellular/sw_driver/qcserial.ko := ld -EL -r  -T ./scripts/module-common.lds -T ./arch/arm64/kernel/module.lds --build-id  -o /home/horizon31/cellular/sw_driver/qcserial.ko /home/horizon31/cellular/sw_driver/qcserial.o /home/horizon31/cellular/sw_driver/qcserial.mod.o ;  true

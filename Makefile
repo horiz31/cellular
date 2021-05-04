@@ -14,6 +14,7 @@ SERVICES=cellular.service
 KILLSERVICES=dhcpcd5
 KILLPKGS=modemmanager
 SYSCFG=/etc/systemd
+SW_LOCATION=sw_driver
 
 .PHONY = clean dependencies enable install provision see uninstall 
 
@@ -45,13 +46,17 @@ enable:
 	@( for s in $(SERVICES) ; do $(SUDO) install -Dm644 $${s%.*}.service $(LIBSYSTEMD)/$${s%.*}.service ; done ; true )
 	@if [ ! -z "$(SERVICES)" ] ; then $(SUDO) systemctl daemon-reload ; fi
 	@( for s in $(SERVICES) ; do $(SUDO) systemctl enable $${s%.*} ; done ; true )
+	@echo ""
+	@echo "Install complete, please reboot now..."	 
+	@echo ""
 
 install: dependencies
 	@for s in $(LOCAL_SCRIPTS) ; do $(SUDO) install -Dm755 $${s} $(LOCAL)/bin/$${s} ; done
     	# NB: stop conflicting services
 	@( for c in stop disable ; do $(SUDO) systemctl $${c} $(KILLSERVICES) ; done ; true )
 	# NB: remove conflicting packages
-	@if [ ! -z "$(KILLPKGS)" ] ; then $(SUDO) apt-get purge -y $(KILLPKGS) ; fi
+	@if [ ! -z "$(KILLPKGS)" ] ; then $(SUDO) apt-get purge -y $(KILLPKGS) ; fi	
+	@if [ -d "$(SW_LOCATION)" ] ; then cd $(SW_LOCATION) && make && make install ; fi
 	@$(MAKE) --no-print-directory -B $(SYSCFG)/cellular.conf $(DRY_RUN)
 	@$(MAKE) --no-print-directory enable
 	
