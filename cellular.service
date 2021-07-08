@@ -14,8 +14,6 @@ StandardOutput=journal
 StandardError=journal
 Restart=on-failure
 RestartSec=10
-StartLimitInterval=100
-StartLimitBurst=5
 TimeoutStartSec=0
 TimeoutStopSec=5
 
