@@ -57,6 +57,7 @@ install: dependencies
 	# NB: remove conflicting packages
 	@if [ ! -z "$(KILLPKGS)" ] ; then $(SUDO) apt-get purge -y $(KILLPKGS) ; fi	
 	@if [ -d "$(SW_LOCATION)" ] ; then cd $(SW_LOCATION) && make && make install ; fi
+	@${SUDO} usermod -a -G root $$USER 
 	@$(MAKE) --no-print-directory -B $(SYSCFG)/cellular.conf $(DRY_RUN)
 	@$(MAKE) --no-print-directory enable
 	

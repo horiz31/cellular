@@ -6,7 +6,7 @@ RequiresMountsFor=/etc /usr
 [Service]
 Type=simple
 EnvironmentFile=/etc/systemd/cellular.conf
-RuntimeDirectory=mavproxy
+RuntimeDirectory=cellular
 RuntimeDirectoryMode=0700
 ExecStartPre=/bin/sleep 5
 ExecStart=/usr/local/bin/cellular-start.sh
