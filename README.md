@@ -42,7 +42,8 @@ This will enter into an interactive session to help you setup your APN
 
 ## General architecture and notes
 
-if no internet, try sudo route add default gw 10.21.141.16 dev wwan0 (where the ip address is that of the cell card)
+if no internet, you may need to add a default gateway, 
+```sudo route add default gw 10.21.141.16 dev wwan0``` (where the ip address is that of the cell card)
 
 A cellular.service file is saved to /etc/systemd/system and enabled for auto start on boot. This service file pulls in config data from /etc/systemd/cellular.conf (see below). When the service is started, it runs cellular-start.sh which configures the cellular modem and uses udhcpc to obtain an ip address and set up the route. 
 
