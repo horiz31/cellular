@@ -10,6 +10,7 @@ RuntimeDirectory=cellular
 RuntimeDirectoryMode=0700
 ExecStartPre=/bin/sleep 5
 ExecStart=/usr/local/bin/cellular-start.sh
+ExecStopPost=/usr/local/bin/cellular-stop.sh
 StandardOutput=journal
 StandardError=journal
 Restart=on-failure
