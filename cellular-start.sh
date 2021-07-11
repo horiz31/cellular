@@ -23,17 +23,17 @@ fi
 #make environment file
 touch /var/run/cellular/cellular.env
 echo "Start success, response:"
-cat /tmp/cellular.$$
+cat $TMP_FILE
 
-NETWORK_HANDLE=$(cat /tmp/cellular.$$ | cut -f2 -d\' |  head -2 | tail -1 | xargs)
-CID=$(cat /tmp/cellular.$$ | tail -1 | cut -f2 -d: | xargs)
+NETWORK_HANDLE=$(cat ${TMP_FILE} | cut -f2 -d\' |  head -2 | tail -1 | xargs)
+CID=$(cat ${TMP_FILE} | tail -1 | cut -f2 -d: | xargs)
 echo "NETWORK HANDLE is $NETWORK_HANDLE"
 echo "CID is $CID"
 #save these values to a .env file so they can be retrieved at shutdown
 echo "NETWORK_HANDLE=${NETWORK_HANDLE}" >> ${ENV_LOCATION}/cellular.env && \
 echo "CID=${CID}" >> ${ENV_LOCATION}/cellular.env
 #ask for dhcp address
-if ! udhcpc -i wwan0 -n -q -t 3 -T 3 ; then exit 1 ; fi
+if ! udhcpc -i wwan0 -n -q -t 3 -T 3 ; then rm $TMP_FILE && exit 1 ; fi
 #cleanup temp files
-rm /tmp/cellular.$$
+rm $TMP_FILE
 
