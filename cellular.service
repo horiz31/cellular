@@ -4,7 +4,7 @@ After=network.target
 RequiresMountsFor=/etc /usr
 
 [Service]
-Type=oneshot
+Type=simple
 RemainAfterExit=true
 EnvironmentFile=/etc/systemd/cellular.conf
 RuntimeDirectory=cellular
@@ -14,6 +14,8 @@ ExecStart=/usr/local/bin/cellular-start.sh
 ExecStop=/usr/local/bin/cellular-stop.sh
 StandardOutput=journal
 StandardError=journal
+Restart=on-failure
+RestartSec=10
 
 [Install]
 WantedBy=multi-user.target
