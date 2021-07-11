@@ -1,12 +1,11 @@
-# Automation boilerplate
-
+# Makefile for H31 cellular service
 SHELL := /bin/bash
 SN := $(shell hostname)
 SUDO := $(shell test $${EUID} -ne 0 && echo "sudo")
 .EXPORT_ALL_VARIABLES:
 
 LOCAL=/usr/local
-LOCAL_SCRIPTS=cellular-start.sh
+LOCAL_SCRIPTS=cellular-start.sh cellular-stop.sh
 CONFIG ?= /var/local
 LIBSYSTEMD=/lib/systemd/system
 PKGDEPS ?= libqmi-utils udhcpc
@@ -29,7 +28,7 @@ default:
 	@echo ""
 
 $(SYSCFG)/cellular.conf:
-	PLATFORM=$(PLATFORM) ./provision.sh $@ $(DRY_RUN)
+	@./provision.sh $@ $(DRY_RUN)
 
 clean:
 	@if [ -d src ] ; then cd src && make clean ; fi
@@ -56,8 +55,7 @@ install: dependencies
 	@( for c in stop disable ; do $(SUDO) systemctl $${c} $(KILLSERVICES) ; done ; true )
 	# NB: remove conflicting packages
 	@if [ ! -z "$(KILLPKGS)" ] ; then $(SUDO) apt-get purge -y $(KILLPKGS) ; fi	
-	@if [ -d "$(SW_LOCATION)" ] ; then cd $(SW_LOCATION) && make && make install ; fi
-	@${SUDO} usermod -a -G root $$USER 
+	@if [ -d "$(SW_LOCATION)" ] ; then echo "" && echo "Installing Sierra Wireless Driver..." && echo "" && cd $(SW_LOCATION) && make && make install ; fi		
 	@$(MAKE) --no-print-directory -B $(SYSCFG)/cellular.conf $(DRY_RUN)
 	@$(MAKE) --no-print-directory enable
 	
