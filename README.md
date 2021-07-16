@@ -1,5 +1,24 @@
 # Cellular Service for H31
 
+On the Nano with Jetpack 4.5.1, the sierra wireless EM7511 upgraded to firmware release 15 (ATT) https://source.sierrawireless.com/resources/airprime/minicard/75xx/airprime-em_mc75xx-approved-fw-packages/#sthash.dzHcyzOQ.dpbs, network manager and modem manager handle the connection.
+```
+sudo apt update
+sudo apt install modemmanager
+```
+add the connection via network manager
+```
+sudo nmcli connection add type gsm ifname cdc-wdm0 con-name 'attcell' apn 'attiotdemo' connection.autoconnect yes
+```
+reboot the system  
+Once the network comes up, you should get a wwan0 interface
+
+```mmcli --list-modems```
+General details and status of them modem (included signal strength) can be listed with "--modem" option, e.g.
+```mmcli --modem=0```
+
+Useful reference: https://techship.com/faq/using-networkmanager-and-modemmanager-in-linux-to-automatically-establish-and-maintain-a-connection/
+
+#### Warning: below is depracated on the Jetson boards at least, do not use due to intermitted connectivity issues. Use networkmanager and modemmanager as detailed above. TBD with the Pi. 
 
 ## Dependencies
 
