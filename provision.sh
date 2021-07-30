@@ -47,32 +47,15 @@ function contains {
 	echo $result
 }
 
-case "$(basename $CONF)" in
-	cellular.conf)	
-		APN=$(value_of APN "super")	
-		if ! $DEFAULTS ; then
-			APN=$(interactive "$APN" "APN for cellular serice")		
-			
-		fi	
-		echo "[Service]" > /tmp/$$.env && \
-		echo "APN=${APN}" >> /tmp/$$.env		
-		;;
+APN=$SUDO nmcli device show cdc-wdm0 | apn;
+if ! $DEFAULTS ; then
+	APN=$(interactive "$APN" "APN for cellular serice")			
+fi	
 
-	
-	*)
-		# preserve contents or generate a viable empty configuration
-		#echo "[Service]" > /tmp/$$.env
-		;;
-esac
 
-if $DRY_RUN ; then
-	set +x
-	echo $CONF && cat /tmp/$$.env && echo ""
-elif [[ $(basename $CONF) == *.sh ]] ; then
-	$SUDO install -Dm755 /tmp/$$.env $CONF
-else
-	$SUDO install -Dm644 /tmp/$$.env $CONF
+if [ ! -z "$APN" ] ; then
+	echo "sudo nmcli connection add type gsm ifname cdc-wdm0 con-name 'attcell' apn '$APN' connection.autoconnect yes";	
 fi
-rm /tmp/$$.env
+
 
 
