@@ -6,16 +6,16 @@ To install,
 1. Clone the repo
 2. ```make install```  This will install modemmanager if needed and the sierra wireless drivers
 
-To view the current apn
+To view the current apn  
 ```make see```
 
-network manager is used to create a connection profile called attcell. You can check this status of this connection with
+network manager is used to create a connection profile called attcell. You can check this status of this connection with  
 ```sudo nmcli con show```
 
-For general debugging and to make sure the modem is recognized:
+For general debugging and to make sure the modem is recognized:  
 ```mmcli --list-modems```
-General details and status of them modem (included signal strength) can be listed with "--modem" option, e.g.
-```mmcli --modem=0```
+General details and status of them modem (included signal strength) can be listed with "--modem" option, e.g.  
+```mmcli --modem=0```    
 
 Useful reference: https://techship.com/faq/using-networkmanager-and-modemmanager-in-linux-to-automatically-establish-and-maintain-a-connection/
 
