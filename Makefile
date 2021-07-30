@@ -36,11 +36,8 @@ install: dependencies
 	@if [ -d "$(SW_LOCATION)" ] ; then echo "" && echo "Installing Sierra Wireless Driver..." && echo "" && cd $(SW_LOCATION) && make && make install ; fi		
 	@$(MAKE) --no-print-directory -B provision
 	
-provision:	
-	$(MAKE) --no-print-directory -B provision
-
 see:
-	$(SUDO) nmcli device show cdc-wdm0 | apn
+	@$(SUDO) nmcli con show attcell | grep gsm.apn | cut -d ":" -f2 | xargs
 
 uninstall:
 	@$(MAKE) --no-print-directory disable
