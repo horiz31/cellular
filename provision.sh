@@ -47,7 +47,7 @@ function contains {
 	echo $result
 }
 
-APN=$SUDO nmcli device show cdc-wdm0 | apn;
+APN=$SUDO nmcli con show attcell | grep gsm.apn | cut -d ":" -f2 | xargs
 if ! $DEFAULTS ; then
 	APN=$(interactive "$APN" "APN for cellular serice")			
 fi	
