@@ -7,7 +7,7 @@ sudo apt install modemmanager
 ```
 add the connection via network manager
 ```
-sudo nmcli connection add type gsm ifname cdc-wdm0 con-name 'attcell' apn 'attiotdemo' connection.autoconnect yes
+sudo nmcli connection add type gsm ifname cdc-wdm0 con-name 'attcell' apn 'Broadband' connection.autoconnect yes
 ```
 reboot the system  
 Once the network comes up, you should get a wwan0 interface
