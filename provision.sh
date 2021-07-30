@@ -47,14 +47,19 @@ function contains {
 	echo $result
 }
 
-APN=$SUDO nmcli con show attcell | grep gsm.apn | cut -d ":" -f2 | xargs
+APN=$($SUDO nmcli con show attcell | grep gsm.apn | cut -d ":" -f2 | xargs)
 if ! $DEFAULTS ; then
 	APN=$(interactive "$APN" "APN for cellular serice")			
 fi	
 
 
 if [ ! -z "$APN" ] ; then
-	echo "sudo nmcli connection add type gsm ifname cdc-wdm0 con-name 'attcell' apn '$APN' connection.autoconnect yes";	
+	echo "Removing existing network manager profile for attcell..."
+	$SUDO nmcli con delete 'attcell'
+	echo "Adding network manager profile for attcell..."
+	$SUDO nmcli connection add type gsm ifname cdc-wdm0 con-name 'attcell' apn '$APN' connection.autoconnect yes	
+else
+	echo "APN cannot be blank, doing nothing!"
 fi
 
 
