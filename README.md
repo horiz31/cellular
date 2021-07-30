@@ -1,24 +1,8 @@
-# Cellular Service for H31
+# Cellular Service for H31, qmilib version
 
-On the Nano with Jetpack 4.5.1, the sierra wireless EM7511 upgraded to firmware release 15 (ATT) https://source.sierrawireless.com/resources/airprime/minicard/75xx/airprime-em_mc75xx-approved-fw-packages/#sthash.dzHcyzOQ.dpbs, network manager and modem manager handle the connection.
-```
-sudo apt update
-sudo apt install modemmanager
-```
-add the connection via network manager
-```
-sudo nmcli connection add type gsm ifname cdc-wdm0 con-name 'attcell' apn 'Broadband' connection.autoconnect yes
-```
-reboot the system  
-Once the network comes up, you should get a wwan0 interface
+#### Warning: below is depracated on the Jetson boards at least, do not use due to intermitted connectivity issues. Use networkmanager and modemmanager as per the nmcli_version branch of this repo. TBD what the best approach is with the Pi4 CM.
 
-```mmcli --list-modems```
-General details and status of them modem (included signal strength) can be listed with "--modem" option, e.g.
-```mmcli --modem=0```
-
-Useful reference: https://techship.com/faq/using-networkmanager-and-modemmanager-in-linux-to-automatically-establish-and-maintain-a-connection/
-
-#### Warning: below is depracated on the Jetson boards at least, do not use due to intermitted connectivity issues. Use networkmanager and modemmanager as detailed above. TBD with the Pi. 
+Tested with Sierra Wireless EM7511 upgraded to firmware release 15 (ATT) https://source.sierrawireless.com/resources/airprime/minicard/75xx/airprime-em_mc75xx-approved-fw-packages/#sthash.dzHcyzOQ.dpbs. Not recommended to proceed without first update the modem firmware. Recommended to use windows for the update. 
 
 ## Dependencies
 
@@ -68,7 +52,7 @@ On the RPi, the default dhcp client (dhcpcd) does not seems to support raw-ip mo
 
 Networkmanager does seem compatible with this setup, however by default an install of networkmanger includes modemmanager (on the rpi packages anyway) and modemmanager tries to use the same QMI tools we are using to set up the modem causes access conflicts. So we must make sure that modemmanager is not on the system. The make install attempts to remove modemmanager if it is found. 
 
-It is unknown why Modemmanager doesn't work out of the box with the sierra wireless modems. I suspect it is because they only support raw-ip mode rather than 802.3. The modemmanager you get with the raspian package manager are pretty old (1.10.x) and it may be possible to build a newer version for the pi. It would be interesting to try the same modem on a Ubuntu build with more up to date packages and see what happens. At this point, I'm not sure what (if any) benefits we'd get from modemmanager but we may uncover something in the future and want to revist this.
+It is unknown why Modemmanager doesn't work out of the box with the sierra wireless modems. I suspect it is because they only support raw-ip mode rather than 802.3 (note this issue may be resolved with a modem firmware update, needs to be testing on Rpi). The modemmanager you get with the raspian package manager are pretty old (1.10.x) and it may be possible to build a newer version for the pi. It would be interesting to try the same modem on a Ubuntu build with more up to date packages and see what happens. At this point, I'm not sure what (if any) benefits we'd get from modemmanager but we may uncover something in the future and want to revist this.
 
 The `cellular-start.sh` script shuts down the wwan0 interface, then configures it for raw-ip mode, then brings it back up. Then the modem is configured with apn and other settings using qmicli. Finally, udhcpc is used as a raw-ip compatible dhcp client to get an ip address and set the route.
 
