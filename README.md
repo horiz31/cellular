@@ -14,7 +14,7 @@ network manager is used to create a connection profile called attcell. You can c
 
 For general debugging and to make sure the modem is recognized:  
 ```mmcli --list-modems```
-General details and status of them modem (included signal strength) can be listed with "--modem" option, e.g.  
+General details and status of them modem (including signal strength) can be listed with "--modem" option, e.g.  
 ```mmcli --modem=0```    
 
 Useful reference: https://techship.com/faq/using-networkmanager-and-modemmanager-in-linux-to-automatically-establish-and-maintain-a-connection/
