@@ -1,10 +1,10 @@
 # Cellular Service for H31, Network Manager Version
 
-On the Nano with Jetpack 4.5.1, the sierra wireless EM7511 upgraded to firmware release 15 (ATT) https://source.sierrawireless.com/resources/airprime/minicard/75xx/airprime-em_mc75xx-approved-fw-packages/#sthash.dzHcyzOQ.dpbs, network manager and modem manager handle the connection.
+On the Nano with Jetpack 4.5.1, tested with Sierra wireless EM7511 upgraded to firmware release 15 (ATT) https://source.sierrawireless.com/resources/airprime/minicard/75xx/airprime-em_mc75xx-approved-fw-packages/#sthash.dzHcyzOQ.dpbs, network manager and modem manager handle the connection. Recommend using Windows to update the EM7511.
 
 To install, 
 1. Clone the repo
-2. ```make install```  This will install modemmanager if needed and the sierra wireless drivers
+2. ```make install```  This will install modemmanager if needed and the sierra wireless drivers and then ask you for the apn and setup the network manager connection profile.
 
 To view the current apn  
 ```make see```
