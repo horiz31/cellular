@@ -57,7 +57,7 @@ if [ ! -z "$APN" ] ; then
 	echo "Removing existing network manager profile for attcell..."
 	$SUDO nmcli con delete 'attcell'
 	echo "Adding network manager profile for attcell..."
-	$SUDO nmcli connection add type gsm ifname cdc-wdm0 con-name "attcell" apn "$APN" connection.autoconnect yes ipv4.route-metric 1	
+	$SUDO nmcli connection add type gsm ifname cdc-wdm0 con-name "attcell" apn "$APN" connection.autoconnect yes	
 	echo "Waiting for conneciton to come up..."
 	sleep 5
 	$SUDO nmcli con show
