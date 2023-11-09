@@ -1,3 +1,3 @@
-kernel//home/horizon31/cellular/sw_driver/qcserial.ko
-kernel//home/horizon31/cellular/sw_driver/usb_wwan.ko
-kernel//home/horizon31/cellular/sw_driver/qmi_wwan.ko
+/home/brad/cellular/sw_driver/qcserial.ko
+/home/brad/cellular/sw_driver/usb_wwan.ko
+/home/brad/cellular/sw_driver/qmi_wwan.ko

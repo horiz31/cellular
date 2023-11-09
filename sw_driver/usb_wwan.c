@@ -34,6 +34,11 @@
 #include <linux/version.h>
 #include "usb-wwan.h"
 
+bool debug = false;
+
+module_param(debug, bool, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
+MODULE_PARM_DESC(debug,"enable/disable driver logging");
+
 /*
  * Generate DTR/RTS signals on the port using the SET_CONTROL_LINE_STATE request
  * in CDC ACM.
@@ -223,6 +228,11 @@ int usb_wwan_write(struct tty_struct *tty, struct usb_serial_port *port,
 
 	dev_dbg(&port->dev, "%s: write (%d chars)\n", __func__, count);
 
+#if 0
+	print_hex_dump(KERN_INFO, "", DUMP_PREFIX_NONE, 16, 1,
+				buf, count, true);
+#endif
+
 	i = 0;
 	left = count;
 	for (i = 0; left > 0 && i < N_OUT_URB; i++) {
@@ -302,6 +312,11 @@ static void usb_wwan_indat_callback(struct urb *urb)
 			__func__, status, endpoint);
 	} else {
 		if (urb->actual_length) {
+			dev_dbg(dev, "%d bytes received\n", urb->actual_length);
+#if 0
+			print_hex_dump(KERN_INFO, "", DUMP_PREFIX_NONE, 16, 1,
+				data, urb->actual_length, true);
+#endif
 			tty_insert_flip_string(&port->port, data,
 					urb->actual_length);
 			tty_flip_buffer_push(&port->port);
@@ -349,12 +364,20 @@ static void usb_wwan_outdat_callback(struct urb *urb)
 	}
 }
 
-int usb_wwan_write_room(struct tty_struct *tty)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,14,0)
+unsigned int usb_wwan_write_room(struct tty_struct *tty)
+#else
+int usb_wwan_write_room(struct tty_struct* tty)
+#endif 
 {
 	struct usb_serial_port *port = tty->driver_data;
 	struct usb_wwan_port_private *portdata;
 	int i;
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,14,0)
+	unsigned int data_len = 0;
+#else 
 	int data_len = 0;
+#endif
 	struct urb *this_urb;
 
 	portdata = usb_get_serial_port_data(port);
@@ -365,17 +388,30 @@ int usb_wwan_write_room(struct tty_struct *tty)
 			data_len += OUT_BUFLEN;
 	}
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,14,0)
+	dev_dbg(&port->dev, "%s: %u\n", __func__, data_len);
+#else
 	dev_dbg(&port->dev, "%s: %d\n", __func__, data_len);
+#endif
+
 	return data_len;
 }
 EXPORT_SYMBOL(usb_wwan_write_room);
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,14,0)
+unsigned int usb_wwan_chars_in_buffer(struct tty_struct* tty)
+#else
 int usb_wwan_chars_in_buffer(struct tty_struct *tty)
+#endif
 {
 	struct usb_serial_port *port = tty->driver_data;
 	struct usb_wwan_port_private *portdata;
 	int i;
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,14,0)
 	int data_len = 0;
+#else
+	unsigned int data_len = 0;
+#endif
 	struct urb *this_urb;
 
 	portdata = usb_get_serial_port_data(port);
@@ -387,7 +423,12 @@ int usb_wwan_chars_in_buffer(struct tty_struct *tty)
 		if (this_urb && test_bit(i, &portdata->out_busy))
 			data_len += this_urb->transfer_buffer_length;
 	}
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,14,0)
 	dev_dbg(&port->dev, "%s: %d\n", __func__, data_len);
+#else
+	dev_dbg(&port->dev, "%s: %d\n", __func__, data_len);
+#endif
+
 	return data_len;
 }
 EXPORT_SYMBOL(usb_wwan_chars_in_buffer);
@@ -570,7 +611,11 @@ bail_out_error:
 }
 EXPORT_SYMBOL_GPL(usb_wwan_port_probe);
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,12,0)
+void usb_wwan_port_remove(struct usb_serial_port* port)
+#else
 int usb_wwan_port_remove(struct usb_serial_port *port)
+#endif
 {
 	int i;
 	struct usb_wwan_port_private *portdata;
@@ -589,7 +634,9 @@ int usb_wwan_port_remove(struct usb_serial_port *port)
 
 	kfree(portdata);
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(5,12,0)
 	return 0;
+#endif
 }
 EXPORT_SYMBOL(usb_wwan_port_remove);
 
@@ -731,4 +778,4 @@ EXPORT_SYMBOL(usb_wwan_resume);
 MODULE_AUTHOR(DRIVER_AUTHOR);
 MODULE_DESCRIPTION(DRIVER_DESC);
 MODULE_LICENSE("GPL v2");
-MODULE_VERSION("1.0.2101.1");
+MODULE_VERSION("1.2.2302.2");

@@ -1,11 +1,18 @@
 #include <linux/module.h>
+#define INCLUDE_VERMAGIC
+#include <linux/build-salt.h>
+#include <linux/elfnote-lto.h>
 #include <linux/vermagic.h>
 #include <linux/compiler.h>
 
+BUILD_SALT;
+BUILD_LTO_INFO;
+
 MODULE_INFO(vermagic, VERMAGIC_STRING);
+MODULE_INFO(name, KBUILD_MODNAME);
 
 __visible struct module __this_module
-__attribute__((section(".gnu.linkonce.this_module"))) = {
+__section(".gnu.linkonce.this_module") = {
 	.name = KBUILD_MODNAME,
 	.init = init_module,
 #ifdef CONFIG_MODULE_UNLOAD
@@ -14,89 +21,88 @@ __attribute__((section(".gnu.linkonce.this_module"))) = {
 	.arch = MODULE_ARCH_INIT,
 };
 
-#ifdef RETPOLINE
+#ifdef CONFIG_RETPOLINE
 MODULE_INFO(retpoline, "Y");
 #endif
 
 static const struct modversion_info ____versions[]
-__used
-__attribute__((section("__versions"))) = {
-	{ 0x3c98d0cd, __VMLINUX_SYMBOL_STR(module_layout) },
-	{ 0x904f63a7, __VMLINUX_SYMBOL_STR(usbnet_tx_timeout) },
-	{ 0x1c18f864, __VMLINUX_SYMBOL_STR(eth_validate_addr) },
-	{ 0x76be7fd, __VMLINUX_SYMBOL_STR(usbnet_start_xmit) },
-	{ 0xd3f97869, __VMLINUX_SYMBOL_STR(usbnet_stop) },
-	{ 0x8eb3b1d9, __VMLINUX_SYMBOL_STR(usbnet_open) },
-	{ 0x64b1bcb9, __VMLINUX_SYMBOL_STR(usb_deregister) },
-	{ 0xb50b34d9, __VMLINUX_SYMBOL_STR(usb_register_driver) },
-	{ 0x310c85b4, __VMLINUX_SYMBOL_STR(eth_commit_mac_addr_change) },
-	{ 0x491bdd3, __VMLINUX_SYMBOL_STR(eth_prepare_mac_addr_change) },
-	{ 0x82e99d84, __VMLINUX_SYMBOL_STR(netif_rx) },
-	{ 0x4829a47e, __VMLINUX_SYMBOL_STR(memcpy) },
-	{ 0x519b8f1f, __VMLINUX_SYMBOL_STR(skb_put) },
-	{ 0x46d43283, __VMLINUX_SYMBOL_STR(__netdev_alloc_skb) },
-	{ 0x7650bb14, __VMLINUX_SYMBOL_STR(netif_stacked_transfer_operstate) },
-	{ 0x5cce6989, __VMLINUX_SYMBOL_STR(netdev_upper_dev_link) },
-	{ 0x6416c88f, __VMLINUX_SYMBOL_STR(register_netdevice) },
-	{ 0xbd671048, __VMLINUX_SYMBOL_STR(__alloc_percpu_gfp) },
-	{ 0xa33d3d4f, __VMLINUX_SYMBOL_STR(alloc_netdev_mqs) },
-	{ 0x5a5a94a6, __VMLINUX_SYMBOL_STR(kstrtou8) },
-	{ 0x86ee0ff8, __VMLINUX_SYMBOL_STR(usbnet_probe) },
-	{ 0x5ad7dd3f, __VMLINUX_SYMBOL_STR(usbnet_disconnect) },
-	{ 0x9fdecc31, __VMLINUX_SYMBOL_STR(unregister_netdevice_many) },
-	{ 0xd09ec1f9, __VMLINUX_SYMBOL_STR(usbnet_suspend) },
-	{ 0xa820327e, __VMLINUX_SYMBOL_STR(usbnet_resume) },
-	{ 0xd9fe6c23, __VMLINUX_SYMBOL_STR(usbnet_get_ethernet_addr) },
-	{ 0x79aa04a2, __VMLINUX_SYMBOL_STR(get_random_bytes) },
-	{ 0xee1dbaa, __VMLINUX_SYMBOL_STR(usb_cdc_wdm_register) },
-	{ 0x1f56d6b9, __VMLINUX_SYMBOL_STR(usbnet_get_endpoints) },
-	{ 0xdc361cec, __VMLINUX_SYMBOL_STR(usb_driver_claim_interface) },
-	{ 0xa054af2e, __VMLINUX_SYMBOL_STR(dev_err) },
-	{ 0x493e888a, __VMLINUX_SYMBOL_STR(usb_ifnum_to_if) },
-	{ 0xea62d819, __VMLINUX_SYMBOL_STR(cdc_parse_cdc_header) },
-	{ 0x91715312, __VMLINUX_SYMBOL_STR(sprintf) },
-	{ 0xa87cf413, __VMLINUX_SYMBOL_STR(clear_bit) },
-	{ 0x8c0fadb4, __VMLINUX_SYMBOL_STR(ether_setup) },
-	{ 0x3a23290b, __VMLINUX_SYMBOL_STR(__dynamic_netdev_dbg) },
-	{ 0xae8c4d0c, __VMLINUX_SYMBOL_STR(set_bit) },
-	{ 0x2449bf98, __VMLINUX_SYMBOL_STR(usbnet_change_mtu) },
-	{ 0x88fce044, __VMLINUX_SYMBOL_STR(call_netdevice_notifiers) },
-	{ 0x6e720ff2, __VMLINUX_SYMBOL_STR(rtnl_unlock) },
-	{ 0xdeba6326, __VMLINUX_SYMBOL_STR(netdev_err) },
-	{ 0xf4f14de6, __VMLINUX_SYMBOL_STR(rtnl_trylock) },
-	{ 0x752d5f5b, __VMLINUX_SYMBOL_STR(kstrtobool) },
-	{ 0xe46149af, __VMLINUX_SYMBOL_STR(netif_carrier_on) },
-	{ 0xad7c7cde, __VMLINUX_SYMBOL_STR(netif_carrier_off) },
-	{ 0x5b89f07f, __VMLINUX_SYMBOL_STR(dev_queue_xmit) },
-	{ 0xf6505633, __VMLINUX_SYMBOL_STR(skb_push) },
-	{ 0x2469810f, __VMLINUX_SYMBOL_STR(__rcu_read_unlock) },
-	{ 0x4ca9669f, __VMLINUX_SYMBOL_STR(scnprintf) },
-	{ 0x7addd25c, __VMLINUX_SYMBOL_STR(netdev_upper_get_next_dev_rcu) },
-	{ 0x8d522714, __VMLINUX_SYMBOL_STR(__rcu_read_lock) },
-	{ 0x43b0c9c3, __VMLINUX_SYMBOL_STR(preempt_schedule) },
-	{ 0x7638e989, __VMLINUX_SYMBOL_STR(unregister_netdevice_queue) },
-	{ 0x3785391e, __VMLINUX_SYMBOL_STR(netdev_upper_dev_unlink) },
-	{ 0xc9ec4e21, __VMLINUX_SYMBOL_STR(free_percpu) },
-	{ 0xecb42cf4, __VMLINUX_SYMBOL_STR(usb_driver_release_interface) },
-	{ 0xfebf4c11, __VMLINUX_SYMBOL_STR(usbnet_write_cmd) },
-	{ 0x256b5e21, __VMLINUX_SYMBOL_STR(__dynamic_dev_dbg) },
-	{ 0xa2b3e680, __VMLINUX_SYMBOL_STR(usb_autopm_put_interface) },
-	{ 0x5bc0ea64, __VMLINUX_SYMBOL_STR(usb_autopm_get_interface) },
-	{ 0xec2ac905, __VMLINUX_SYMBOL_STR(__ll_sc_atomic_sub_return) },
-	{ 0x7c97c8a4, __VMLINUX_SYMBOL_STR(__ll_sc_atomic_add_return) },
-	{ 0x1e44d488, __VMLINUX_SYMBOL_STR(free_netdev) },
-	{ 0xfe7c4287, __VMLINUX_SYMBOL_STR(nr_cpu_ids) },
-	{ 0x8833a2a8, __VMLINUX_SYMBOL_STR(__cpu_possible_mask) },
-	{ 0xc5844fb8, __VMLINUX_SYMBOL_STR(__per_cpu_offset) },
-	{ 0xc0a3d105, __VMLINUX_SYMBOL_STR(find_next_bit) },
-	{ 0xad995dac, __VMLINUX_SYMBOL_STR(netdev_stats_to_stats64) },
-	{ 0x1fdc7df2, __VMLINUX_SYMBOL_STR(_mcount) },
+__used __section("__versions") = {
+	{ 0x4cf819e6, "module_layout" },
+	{ 0x83253110, "param_ops_bool" },
+	{ 0xafcdb29c, "dev_get_tstats64" },
+	{ 0x80d148c6, "usbnet_tx_timeout" },
+	{ 0xe057e271, "eth_validate_addr" },
+	{ 0x2d2149c8, "usbnet_start_xmit" },
+	{ 0x270d2158, "usbnet_stop" },
+	{ 0x5bea694f, "usbnet_open" },
+	{ 0x458f49d8, "usb_deregister" },
+	{ 0xb0a1b0c0, "usb_register_driver" },
+	{ 0x3ff61e76, "free_netdev" },
+	{ 0x57bafa7, "netif_stacked_transfer_operstate" },
+	{ 0xcdfc7076, "netdev_upper_dev_link" },
+	{ 0x27178b75, "register_netdevice" },
+	{ 0xaf793668, "__alloc_percpu_gfp" },
+	{ 0x5c4a65ea, "alloc_netdev_mqs" },
+	{ 0x6a6e05bf, "kstrtou8" },
+	{ 0x1b6d01db, "usbnet_disconnect" },
+	{ 0x9fdecc31, "unregister_netdevice_many" },
+	{ 0xe8962409, "netdev_err" },
+	{ 0xa22a96f7, "current_task" },
+	{ 0xb57306a2, "ether_setup" },
+	{ 0x62f8d4fb, "__dynamic_netdev_dbg" },
+	{ 0x6e720ff2, "rtnl_unlock" },
+	{ 0x3a9ea0b3, "usbnet_change_mtu" },
+	{ 0x6d555726, "call_netdevice_notifiers" },
+	{ 0xf4f14de6, "rtnl_trylock" },
+	{ 0x124bad4d, "kstrtobool" },
+	{ 0x8bf67d99, "netif_rx" },
+	{ 0x69acdf38, "memcpy" },
+	{ 0x768d5be5, "skb_put" },
+	{ 0x98493f07, "kfree_skb_reason" },
+	{ 0x72d42dfa, "__netdev_alloc_skb" },
+	{ 0x1195cb51, "usbnet_probe" },
+	{ 0x41ed3709, "get_random_bytes" },
+	{ 0x535360f8, "usb_cdc_wdm_register" },
+	{ 0x58b9d272, "usbnet_get_endpoints" },
+	{ 0x8ee978db, "usbnet_get_ethernet_addr" },
+	{ 0x9f5a878f, "usb_driver_claim_interface" },
+	{ 0x679587cb, "usb_ifnum_to_if" },
+	{ 0x82a2408f, "cdc_parse_cdc_header" },
+	{ 0xe15df065, "usb_driver_release_interface" },
+	{ 0x54b1fac6, "__ubsan_handle_load_invalid_value" },
+	{ 0x92997ed8, "_printk" },
+	{ 0xb06a469c, "dev_driver_string" },
+	{ 0x7680ff31, "usb_autopm_put_interface" },
+	{ 0xc9c51f39, "usb_autopm_get_interface" },
+	{ 0x29b67a6b, "usbnet_suspend" },
+	{ 0x65487097, "__x86_indirect_thunk_rax" },
+	{ 0x4aaf9cf3, "usbnet_resume" },
+	{ 0xbe1620ec, "eth_commit_mac_addr_change" },
+	{ 0xd8e61a90, "eth_prepare_mac_addr_change" },
+	{ 0x3c3ff9fd, "sprintf" },
+	{ 0x7b52340a, "netif_carrier_on" },
+	{ 0xff7273e7, "netif_carrier_off" },
+	{ 0x5d602bfd, "dev_queue_xmit" },
+	{ 0x28251225, "skb_push" },
+	{ 0x96848186, "scnprintf" },
+	{ 0xcbba0910, "unregister_netdevice_queue" },
+	{ 0x9fb8f094, "netdev_upper_dev_unlink" },
+	{ 0xc9ec4e21, "free_percpu" },
+	{ 0x192daf4, "usbnet_write_cmd" },
+	{ 0xd0da656b, "__stack_chk_fail" },
+	{ 0x2d5f69b3, "rcu_read_unlock_strict" },
+	{ 0x8a1f90bb, "netdev_upper_get_next_dev_rcu" },
+	{ 0x87a21cb3, "__ubsan_handle_out_of_bounds" },
+	{ 0x17de3d5, "nr_cpu_ids" },
+	{ 0xaa44a707, "cpumask_next" },
+	{ 0x9e683f75, "__cpu_possible_mask" },
+	{ 0xb19a5453, "__per_cpu_offset" },
+	{ 0x229484cd, "netdev_stats_to_stats64" },
+	{ 0x5b8239ca, "__x86_return_thunk" },
+	{ 0xbdfb6dbb, "__fentry__" },
 };
 
-static const char __module_depends[]
-__used
-__attribute__((section(".modinfo"))) =
-"depends=cdc-wdm";
+MODULE_INFO(depends, "usbnet,cdc-wdm");
 
 MODULE_ALIAS("usb:v12D1p*d*dc*dsc*dp*icFFisc01ip09in*");
 MODULE_ALIAS("usb:v12D1p*d*dc*dsc*dp*icFFisc01ip39in*");
@@ -381,6 +387,9 @@ MODULE_ALIAS("usb:v1199p907Bd*dc*dsc*dp*ic*isc*ip*in08*");
 MODULE_ALIAS("usb:v1199p907Bd*dc*dsc*dp*ic*isc*ip*in0A*");
 MODULE_ALIAS("usb:v1199p9091d*dc*dsc*dp*ic*isc*ip*in08*");
 MODULE_ALIAS("usb:v1199p90D9d*dc*dsc*dp*ic*isc*ip*in00*");
+MODULE_ALIAS("usb:v1199p90D3d*dc*dsc*dp*ic*isc*ip*in08*");
+MODULE_ALIAS("usb:v1199p90E1d*dc*dsc*dp*ic*isc*ip*in08*");
+MODULE_ALIAS("usb:v1199p90E3d*dc*dsc*dp*ic*isc*ip*in08*");
 MODULE_ALIAS("usb:v1BBBp011Ed*dc*dsc*dp*ic*isc*ip*in04*");
 MODULE_ALIAS("usb:v1BBBp0203d*dc*dsc*dp*ic*isc*ip*in02*");
 MODULE_ALIAS("usb:v2357p0201d*dc*dsc*dp*ic*isc*ip*in04*");
@@ -489,4 +498,4 @@ MODULE_ALIAS("usb:v1199p901Bd*dc*dsc*dp*ic*isc*ip*in00*");
 MODULE_ALIAS("usb:v12D1p14F1d*dc*dsc*dp*ic*isc*ip*in00*");
 MODULE_ALIAS("usb:v1410pA021d*dc*dsc*dp*ic*isc*ip*in00*");
 
-MODULE_INFO(srcversion, "6A62CA765A0A73E920F8A95");
+MODULE_INFO(srcversion, "0D0563C85A2A863E2DBC2CD");

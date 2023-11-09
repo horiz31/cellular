@@ -1,68 +1,74 @@
 #include <linux/module.h>
+#define INCLUDE_VERMAGIC
+#include <linux/build-salt.h>
+#include <linux/elfnote-lto.h>
 #include <linux/vermagic.h>
 #include <linux/compiler.h>
 
+BUILD_SALT;
+BUILD_LTO_INFO;
+
 MODULE_INFO(vermagic, VERMAGIC_STRING);
+MODULE_INFO(name, KBUILD_MODNAME);
 
 __visible struct module __this_module
-__attribute__((section(".gnu.linkonce.this_module"))) = {
+__section(".gnu.linkonce.this_module") = {
 	.name = KBUILD_MODNAME,
 	.arch = MODULE_ARCH_INIT,
 };
 
-#ifdef RETPOLINE
+#ifdef CONFIG_RETPOLINE
 MODULE_INFO(retpoline, "Y");
 #endif
 
 static const struct modversion_info ____versions[]
-__used
-__attribute__((section("__versions"))) = {
-	{ 0x3c98d0cd, __VMLINUX_SYMBOL_STR(module_layout) },
-	{ 0xdefc71f5, __VMLINUX_SYMBOL_STR(kmalloc_caches) },
-	{ 0x1fdc7df2, __VMLINUX_SYMBOL_STR(_mcount) },
-	{ 0x84bc974b, __VMLINUX_SYMBOL_STR(__arch_copy_from_user) },
-	{ 0xddab50b8, __VMLINUX_SYMBOL_STR(usb_get_from_anchor) },
-	{ 0x1d438fd, __VMLINUX_SYMBOL_STR(usb_kill_urb) },
-	{ 0x5bc0ea64, __VMLINUX_SYMBOL_STR(usb_autopm_get_interface) },
-	{ 0xe927e89f, __VMLINUX_SYMBOL_STR(mutex_unlock) },
-	{ 0xa87cf413, __VMLINUX_SYMBOL_STR(clear_bit) },
-	{ 0x2a59ee64, __VMLINUX_SYMBOL_STR(usb_unlink_urb) },
-	{ 0x526c3a6c, __VMLINUX_SYMBOL_STR(jiffies) },
-	{ 0xab40cca9, __VMLINUX_SYMBOL_STR(__init_waitqueue_head) },
-	{ 0xd3259d65, __VMLINUX_SYMBOL_STR(test_and_set_bit) },
-	{ 0xa054af2e, __VMLINUX_SYMBOL_STR(dev_err) },
-	{ 0x97fdbab9, __VMLINUX_SYMBOL_STR(_raw_spin_unlock_irqrestore) },
-	{ 0x68a22401, __VMLINUX_SYMBOL_STR(usb_autopm_put_interface_async) },
-	{ 0x728b53e9, __VMLINUX_SYMBOL_STR(usb_control_msg) },
-	{ 0x8fa8f791, __VMLINUX_SYMBOL_STR(_raw_spin_unlock_irq) },
-	{ 0x50f93ee2, __VMLINUX_SYMBOL_STR(tty_insert_flip_string_fixed_flag) },
-	{ 0x7e9d9fd3, __VMLINUX_SYMBOL_STR(mutex_lock) },
-	{ 0xc6cbbc89, __VMLINUX_SYMBOL_STR(capable) },
-	{ 0x14111e6b, __VMLINUX_SYMBOL_STR(usb_submit_urb) },
-	{ 0xe318d7b9, __VMLINUX_SYMBOL_STR(usb_autopm_get_interface_async) },
-	{ 0x93fca811, __VMLINUX_SYMBOL_STR(__get_free_pages) },
-	{ 0xb35dea8f, __VMLINUX_SYMBOL_STR(__arch_copy_to_user) },
-	{ 0x20ffa7f6, __VMLINUX_SYMBOL_STR(_raw_spin_lock_irq) },
-	{ 0x8dd1990a, __VMLINUX_SYMBOL_STR(kmem_cache_alloc_trace) },
-	{ 0x256b5e21, __VMLINUX_SYMBOL_STR(__dynamic_dev_dbg) },
-	{ 0x96220280, __VMLINUX_SYMBOL_STR(_raw_spin_lock_irqsave) },
-	{ 0x4302d0eb, __VMLINUX_SYMBOL_STR(free_pages) },
-	{ 0x433e2e1f, __VMLINUX_SYMBOL_STR(usb_autopm_get_interface_no_resume) },
-	{ 0x409873e3, __VMLINUX_SYMBOL_STR(tty_termios_baud_rate) },
-	{ 0x37a0cba, __VMLINUX_SYMBOL_STR(kfree) },
-	{ 0x4829a47e, __VMLINUX_SYMBOL_STR(memcpy) },
-	{ 0x7bc62d12, __VMLINUX_SYMBOL_STR(tty_flip_buffer_push) },
-	{ 0x1a1475a, __VMLINUX_SYMBOL_STR(usb_serial_port_softint) },
-	{ 0xf4d4127b, __VMLINUX_SYMBOL_STR(usb_free_urb) },
-	{ 0xa2b3e680, __VMLINUX_SYMBOL_STR(usb_autopm_put_interface) },
-	{ 0x7dc2ff93, __VMLINUX_SYMBOL_STR(usb_anchor_urb) },
-	{ 0xc985ecc6, __VMLINUX_SYMBOL_STR(usb_alloc_urb) },
+__used __section("__versions") = {
+	{ 0x4cf819e6, "module_layout" },
+	{ 0x696f0c3, "kmalloc_caches" },
+	{ 0x54b1fac6, "__ubsan_handle_load_invalid_value" },
+	{ 0x1cd6d5ed, "usb_get_from_anchor" },
+	{ 0x73dc96bd, "usb_kill_urb" },
+	{ 0x83253110, "param_ops_bool" },
+	{ 0xc9c51f39, "usb_autopm_get_interface" },
+	{ 0x3213f038, "mutex_unlock" },
+	{ 0xca666cb7, "usb_unlink_urb" },
+	{ 0x33a21a09, "pv_ops" },
+	{ 0x15ba50a6, "jiffies" },
+	{ 0xd9a5ea54, "__init_waitqueue_head" },
+	{ 0x6b10bee1, "_copy_to_user" },
+	{ 0x5b8239ca, "__x86_return_thunk" },
+	{ 0xd35cce70, "_raw_spin_unlock_irqrestore" },
+	{ 0x467b419c, "usb_autopm_put_interface_async" },
+	{ 0xcc7ef1da, "usb_control_msg" },
+	{ 0x7b0aeebd, "tty_insert_flip_string_fixed_flag" },
+	{ 0x4dfa8d4b, "mutex_lock" },
+	{ 0x87a21cb3, "__ubsan_handle_out_of_bounds" },
+	{ 0xc6cbbc89, "capable" },
+	{ 0xbd70750d, "usb_submit_urb" },
+	{ 0xe034150c, "usb_autopm_get_interface_async" },
+	{ 0x6a5cb5ee, "__get_free_pages" },
+	{ 0xd0da656b, "__stack_chk_fail" },
+	{ 0x8427cc7b, "_raw_spin_lock_irq" },
+	{ 0x92997ed8, "_printk" },
+	{ 0xb06a469c, "dev_driver_string" },
+	{ 0xbdfb6dbb, "__fentry__" },
+	{ 0x4f00afd3, "kmem_cache_alloc_trace" },
+	{ 0x34db050b, "_raw_spin_lock_irqsave" },
+	{ 0x4302d0eb, "free_pages" },
+	{ 0x1f9ee705, "usb_autopm_get_interface_no_resume" },
+	{ 0x409873e3, "tty_termios_baud_rate" },
+	{ 0x37a0cba, "kfree" },
+	{ 0x42dc216a, "tty_flip_buffer_push" },
+	{ 0x6ebe366f, "ktime_get_mono_fast_ns" },
+	{ 0xff99d0fb, "usb_serial_port_softint" },
+	{ 0x13c49cc2, "_copy_from_user" },
+	{ 0x88bce085, "usb_free_urb" },
+	{ 0x7680ff31, "usb_autopm_put_interface" },
+	{ 0x29169978, "usb_anchor_urb" },
+	{ 0x1f861c5f, "usb_alloc_urb" },
 };
 
-static const char __module_depends[]
-__used
-__attribute__((section(".modinfo"))) =
-"depends=";
+MODULE_INFO(depends, "usbserial");
 
 
-MODULE_INFO(srcversion, "0E02DF747127CF35C5BD38C");
+MODULE_INFO(srcversion, "19011C4EF5538CAFCFE593F");

@@ -21,6 +21,43 @@
 #include <linux/u64_stats_sync.h>
 #include <linux/version.h>
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0)
+#include <linux/sched/signal.h>
+#endif 
+
+bool debug = false;
+
+module_param(debug, bool, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
+MODULE_PARM_DESC(debug,"enable/disable driver logging");
+
+#ifndef DEBUG
+
+#ifdef dev_dbg 
+#undef dev_dbg
+#endif
+
+#define dev_dbg(dev, fmt, ...) do {\
+	if (debug) {\
+		if (dev) {\
+			printk(KERN_DEBUG "[D]%s %s:"pr_fmt(fmt), dev_driver_string(dev), dev_name(dev), ##__VA_ARGS__);\
+		}\
+	}\
+} while (0)
+
+#ifdef dev_err
+#undef dev_err
+#endif
+
+#define dev_err(dev, fmt, ...) do { \
+	if (debug) { \
+		if (dev) {	\
+			printk(KERN_ERR "[E]%s %s:"pr_fmt(fmt), dev_driver_string(dev), dev_name(dev), ##__VA_ARGS__); 	\
+		}\
+	}\
+} while (0)
+
+#endif /* DEBUG */
+
 /* This driver supports wwan (3G/LTE/?) devices using a vendor
  * specific management protocol called Qualcomm MSM Interface (QMI) -
  * in addition to the more common AT commands over serial interface
@@ -64,6 +101,7 @@ enum qmi_wwan_flags {
 
 enum qmi_wwan_quirks {
 	QMI_WWAN_QUIRK_DTR = 1 << 0,	/* needs "set DTR" request */
+	QMI_WWAN_QUIRK_QMI_8K = 1 << 1, /* set QMI control in to 8K */
 };
 
 struct qmimux_hdr {
@@ -124,12 +162,8 @@ static netdev_tx_t qmimux_start_xmit(struct sk_buff *skb, struct net_device *dev
 	ret = dev_queue_xmit(skb);
 
 	if (likely(ret == NET_XMIT_SUCCESS || ret == NET_XMIT_CN)) {
-		struct pcpu_sw_netstats *stats64 = this_cpu_ptr(priv->stats64);
-
-		u64_stats_update_begin(&stats64->syncp);
-		stats64->tx_packets++;
-		stats64->tx_bytes += len;
-		u64_stats_update_end(&stats64->syncp);
+		dev->stats.tx_packets++;
+		dev->stats.tx_bytes += len;
 	} else {
 		dev->stats.tx_dropped++;
 	}
@@ -137,6 +171,7 @@ static netdev_tx_t qmimux_start_xmit(struct sk_buff *skb, struct net_device *dev
 	return ret;
 }
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(6,0,0)
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4,11,0)
 void qmimux_get_stats64(struct net_device *net,
 			       struct rtnl_link_stats64 *stats)
@@ -176,12 +211,17 @@ struct rtnl_link_stats64* qmimux_get_stats64(struct net_device *net,
 	return stats;
 #endif	
 }
+#endif
 
 static const struct net_device_ops qmimux_netdev_ops = {
 	.ndo_open        = qmimux_open,
 	.ndo_stop        = qmimux_stop,
 	.ndo_start_xmit  = qmimux_start_xmit,
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(6,0,0)
+	.ndo_get_stats64 = dev_get_tstats64,
+#else	
 	.ndo_get_stats64 = qmimux_get_stats64,
+#endif	
 };
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4,11,9)
@@ -243,25 +283,39 @@ static int qmimux_rx_fixup(struct usbnet *dev, struct sk_buff *skb)
 		len = be16_to_cpu(hdr->pkt_len);
 
 		/* drop the packet, bogus length */
-		if (offset + len + qmimux_hdr_sz > skb->len)
-			return 0;
+		if (offset + len + qmimux_hdr_sz > skb->len) {
+			/* increment parent interface length errors */
+			dev->net->stats.rx_length_errors++;
+			goto skip;
+		}
 
 		/* control packet, we do not know what to do */
-		if (hdr->pad & 0x80)
+		if (hdr->pad & 0x80) {
+			/* increment parent interface frame errors */
+			dev->net->stats.rx_frame_errors++;
 			goto skip;
+		}
 
 		/* extract padding length and check for valid length info */
 		pad_len = hdr->pad & 0x3f;
-		if (len == 0 || pad_len >= len)
+		if (len == 0 || pad_len >= len) {
+			/* increment parent interface frame errors */
+			dev->net->stats.rx_frame_errors++;
 			goto skip;
+		}
 		pkt_len = len - pad_len;
 
 		net = qmimux_find_dev(dev, hdr->mux_id);
-		if (!net)
+		if (!net) {
+			net->stats.rx_missed_errors++;
 			goto skip;
-		skbn = netdev_alloc_skb(net, pkt_len);
-		if (!skbn)
-			return 0;
+		}
+			
+		skbn = netdev_alloc_skb(net, pkt_len + LL_MAX_HEADER);
+		if (!skbn) {
+			net->stats.rx_dropped++;
+			goto skip;
+		}
 		skbn->dev = net;
 
 		switch (skb->data[offset + qmimux_hdr_sz] & 0xf0) {
@@ -273,28 +327,26 @@ static int qmimux_rx_fixup(struct usbnet *dev, struct sk_buff *skb)
 			break;
 		default:
 			/* not ip - do not know what to do */
+			kfree_skb(skbn);
+			net->stats.rx_frame_errors++;
 			goto skip;
 		}
 
 		skb_put_data(skbn, skb->data + offset + qmimux_hdr_sz, pkt_len);
 		if (netif_rx(skbn) != NET_RX_SUCCESS) {
-			net->stats.rx_errors++;
+			/*rx_dropped was already incremented, use other to distinguish */
+			net->stats.rx_fifo_errors++;
 			return 0;
 		} else {
-			struct pcpu_sw_netstats *stats64;
-			struct qmimux_priv *priv = netdev_priv(net);
-
-			stats64 = this_cpu_ptr(priv->stats64);
-			u64_stats_update_begin(&stats64->syncp);
-			stats64->rx_packets++;
-			stats64->rx_bytes += pkt_len;
-			u64_stats_update_end(&stats64->syncp);
+			net->stats.rx_packets++;
+		    net->stats.rx_bytes += pkt_len;
 		}
 
 skip:
 		offset += len + qmimux_hdr_sz;
 	}
-	return 1;
+
+	return 0;
 }
 
 static int qmimux_register_device(struct net_device *real_dev, u8 mux_id)
@@ -590,8 +642,10 @@ static int qmi_wwan_rx_fixup(struct usbnet *dev, struct sk_buff *skb)
 	__be16 proto;
 
 	/* This check is no longer done by usbnet */
-	if (skb->len < dev->net->hard_header_len)
+	if (skb->len < dev->net->hard_header_len) {
+		dev->net->stats.rx_length_errors++;
 		return 0;
+	}
 
 	if (info->flags & QMI_WWAN_FLAG_MUX)
 		return qmimux_rx_fixup(dev, skb);
@@ -604,16 +658,20 @@ static int qmi_wwan_rx_fixup(struct usbnet *dev, struct sk_buff *skb)
 		proto = htons(ETH_P_IPV6);
 		break;
 	case 0x00:
-		if (rawip)
+		if (rawip) {
+			dev->net->stats.rx_frame_errors++;
 			return 0;
+		}
 		if (is_multicast_ether_addr(skb->data))
 			return 1;
 		/* possibly bogus destination - rewrite just in case */
 		skb_reset_mac_header(skb);
 		goto fix_dest;
 	default:
-		if (rawip)
+		if (rawip) {
+			dev->net->stats.rx_frame_errors++;
 			return 0;
+		}
 		/* pass along other packets without modifications */
 		return 1;
 	}
@@ -624,8 +682,10 @@ static int qmi_wwan_rx_fixup(struct usbnet *dev, struct sk_buff *skb)
 		return 1;
 	}
 
-	if (skb_headroom(skb) < ETH_HLEN)
+	if (skb_headroom(skb) < ETH_HLEN) {
+		dev->net->stats.rx_length_errors++;
 		return 0;
+	}
 	skb_push(skb, ETH_HLEN);
 	skb_reset_mac_header(skb);
 	eth_hdr(skb)->h_proto = proto;
@@ -662,9 +722,14 @@ static const struct net_device_ops qmi_wwan_netdev_ops = {
 	.ndo_start_xmit		= usbnet_start_xmit,
 	.ndo_tx_timeout		= usbnet_tx_timeout,
 	.ndo_change_mtu		= usbnet_change_mtu,
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,12,0)
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,11,0)
+	.ndo_get_stats64	= dev_get_tstats64,
+#else
+    #if LINUX_VERSION_CODE >= KERNEL_VERSION(4,12,0)
 	.ndo_get_stats64	= usbnet_get_stats64,
-#endif	
+    #endif
+#endif
 	.ndo_set_mac_address	= qmi_wwan_mac_addr,
 	.ndo_validate_addr	= eth_validate_addr,
 };
@@ -709,6 +774,7 @@ static int qmi_wwan_register_subdriver(struct usbnet *dev)
 	int rv;
 	struct usb_driver *subdriver = NULL;
 	struct qmi_wwan_state *info = (void *)&dev->data;
+	int bufsize = 4096;
 
 	/* collect bulk endpoints */
 	rv = usbnet_get_endpoints(dev, info->data);
@@ -729,8 +795,19 @@ static int qmi_wwan_register_subdriver(struct usbnet *dev)
 	atomic_set(&info->pmcount, 0);
 
 	/* register subdriver */
+	if (dev->driver_info->data & QMI_WWAN_QUIRK_QMI_8K)
+		bufsize = 8192; 
+
+	dev_dbg(&dev->intf->dev, "%s() bufsize=%d\n", __func__, bufsize);
+
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,14,0)
 	subdriver = usb_cdc_wdm_register(info->control, &dev->status->desc,
-					 4096, &qmi_wwan_cdc_wdm_manage_power);
+		bufsize, WWAN_PORT_QMI, &qmi_wwan_cdc_wdm_manage_power);
+#else
+	subdriver = usb_cdc_wdm_register(info->control, &dev->status->desc,
+		bufsize, &qmi_wwan_cdc_wdm_manage_power);
+#endif
+
 	if (IS_ERR(subdriver)) {
 		dev_err(&info->control->dev, "subdriver registration failed\n");
 		rv = PTR_ERR(subdriver);
@@ -767,11 +844,15 @@ static int qmi_wwan_bind(struct usbnet *dev, struct usb_interface *intf)
 	u8 *buf = intf->cur_altsetting->extra;
 	int len = intf->cur_altsetting->extralen;
 	struct usb_interface_descriptor *desc = &intf->cur_altsetting->desc;
-	struct usb_cdc_union_desc *cdc_union;
-	struct usb_cdc_ether_desc *cdc_ether;
+	struct usb_cdc_union_desc *cdc_union = NULL;
+	struct usb_cdc_ether_desc *cdc_ether = NULL;
 	struct usb_driver *driver = driver_of(intf);
 	struct qmi_wwan_state *info = (void *)&dev->data;
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0)
 	struct usb_cdc_parsed_header hdr;
+#else
+	u32 found = 0;
+#endif
 
 	BUILD_BUG_ON((sizeof(((struct usbnet *)0)->data) <
 		      sizeof(struct qmi_wwan_state)));
@@ -780,10 +861,73 @@ static int qmi_wwan_bind(struct usbnet *dev, struct usb_interface *intf)
 	info->control = intf;
 	info->data = intf;
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0)
 	/* and a number of CDC descriptors */
 	cdc_parse_cdc_header(&hdr, intf, buf, len);
 	cdc_union = hdr.usb_cdc_union_desc;
 	cdc_ether = hdr.usb_cdc_ether_desc;
+#else
+
+	/* and a number of CDC descriptors */
+	while (len > 3) {
+		struct usb_descriptor_header *h = (void *)buf;
+
+		/* ignore any misplaced descriptors */
+		if (h->bDescriptorType != USB_DT_CS_INTERFACE)
+			goto next_desc;
+
+		/* buf[2] is CDC descriptor subtype */
+		switch (buf[2]) {
+		case USB_CDC_HEADER_TYPE:
+			if (found & 1 << USB_CDC_HEADER_TYPE) {
+				dev_dbg(&intf->dev, "extra CDC header\n");
+				goto err;
+			}
+			if (h->bLength != sizeof(struct usb_cdc_header_desc)) {
+				dev_dbg(&intf->dev, "CDC header len %u\n",
+					h->bLength);
+				goto err;
+			}
+			break;
+		case USB_CDC_UNION_TYPE:
+			if (found & 1 << USB_CDC_UNION_TYPE) {
+				dev_dbg(&intf->dev, "extra CDC union\n");
+				goto err;
+			}
+			if (h->bLength != sizeof(struct usb_cdc_union_desc)) {
+				dev_dbg(&intf->dev, "CDC union len %u\n",
+					h->bLength);
+				goto err;
+			}
+			cdc_union = (struct usb_cdc_union_desc *)buf;
+			break;
+		case USB_CDC_ETHERNET_TYPE:
+			if (found & 1 << USB_CDC_ETHERNET_TYPE) {
+				dev_dbg(&intf->dev, "extra CDC ether\n");
+				goto err;
+			}
+			if (h->bLength != sizeof(struct usb_cdc_ether_desc)) {
+				dev_dbg(&intf->dev, "CDC ether len %u\n",
+					h->bLength);
+				goto err;
+			}
+			cdc_ether = (struct usb_cdc_ether_desc *)buf;
+			break;
+		}
+
+		/* Remember which CDC functional descriptors we've seen.  Works
+		 * for all types we care about, of which USB_CDC_ETHERNET_TYPE
+		 * (0x0f) is the highest numbered
+		 */
+		if (buf[2] < 32)
+			found |= 1 << buf[2];
+
+next_desc:
+		len -= h->bLength;
+		buf += h->bLength;
+	}
+
+#endif 
 
 	/* Use separate control and data interfaces if we found a CDC Union */
 	if (cdc_union) {
@@ -854,11 +998,25 @@ static int qmi_wwan_bind(struct usbnet *dev, struct usb_interface *intf)
 
 	/* make MAC addr easily distinguishable from an IP header */
 	if (possibly_iphdr(dev->net->dev_addr)) {
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(5,16,0)
+		u8 addr = dev->net->dev_addr[0];
+
+		addr |= 0x02;	/* set local assignment bit */
+		addr &= 0xbf;	/* clear "IP" bit */
+		dev_addr_mod(dev->net, 0, &addr, 1);
+#else
 		dev->net->dev_addr[0] |= 0x02;	/* set local assignment bit */
 		dev->net->dev_addr[0] &= 0xbf;	/* clear "IP" bit */
+#endif		
 	}
 	dev->net->netdev_ops = &qmi_wwan_netdev_ops;
 	dev->net->sysfs_groups[0] = &qmi_wwan_sysfs_attr_group;
+
+	/* Set rx_urb_size to allow QMAP rx data aggregation */
+	dev->rx_urb_size = 0x4000;	/* 16K */
+
+	printk(KERN_DEBUG "[D]%s: qmi_wwan dev %p tstats %p\n", "qmi_wwan", 
+			dev->net, dev->net->tstats);
 err:
 	return status;
 }
@@ -945,7 +1103,7 @@ err:
 
 static const struct driver_info	qmi_wwan_info = {
 	.description	= "WWAN/QMI device",
-	.flags		= FLAG_WWAN | FLAG_SEND_ZLP,
+	.flags		= FLAG_WWAN | FLAG_SEND_ZLP | FLAG_RX_ASSEMBLE,
 	.bind		= qmi_wwan_bind,
 	.unbind		= qmi_wwan_unbind,
 	.manage_power	= qmi_wwan_manage_power,
@@ -954,12 +1112,22 @@ static const struct driver_info	qmi_wwan_info = {
 
 static const struct driver_info	qmi_wwan_info_quirk_dtr = {
 	.description	= "WWAN/QMI device",
-	.flags		= FLAG_WWAN | FLAG_SEND_ZLP,
+	.flags		= FLAG_WWAN | FLAG_SEND_ZLP | FLAG_RX_ASSEMBLE,
 	.bind		= qmi_wwan_bind,
 	.unbind		= qmi_wwan_unbind,
 	.manage_power	= qmi_wwan_manage_power,
 	.rx_fixup       = qmi_wwan_rx_fixup,
 	.data           = QMI_WWAN_QUIRK_DTR,
+};
+
+static const struct driver_info	qmi_wwan_info_quirk_dtr_qmi_8k = {
+	.description	= "WWAN/QMI device",
+	.flags		= FLAG_WWAN | FLAG_SEND_ZLP | FLAG_RX_ASSEMBLE,
+	.bind		= qmi_wwan_bind,
+	.unbind		= qmi_wwan_unbind,
+	.manage_power	= qmi_wwan_manage_power,
+	.rx_fixup       = qmi_wwan_rx_fixup,
+	.data           = QMI_WWAN_QUIRK_DTR | QMI_WWAN_QUIRK_QMI_8K,
 };
 
 #define HUAWEI_VENDOR_ID	0x12D1
@@ -973,6 +1141,11 @@ static const struct driver_info	qmi_wwan_info_quirk_dtr = {
 #define QMI_QUIRK_SET_DTR(vend, prod, num) \
 	USB_DEVICE_INTERFACE_NUMBER(vend, prod, num), \
 	.driver_info = (unsigned long)&qmi_wwan_info_quirk_dtr
+
+/* devices requiring "set DTR" & qmi 8K quirk */
+#define QMI_QUIRK_SET_DTR_QMI_8K(vend, prod, num) \
+	USB_DEVICE_INTERFACE_NUMBER(vend, prod, num), \
+	.driver_info = (unsigned long)&qmi_wwan_info_quirk_dtr_qmi_8k
 
 /* Gobi 1000 QMI/wwan interface number is 3 according to qcserial */
 #define QMI_GOBI1K_DEVICE(vend, prod) \
@@ -1364,7 +1537,10 @@ static const struct usb_device_id products[] = {
 	{QMI_QUIRK_SET_DTR(0x1199, 0x907b, 8)},	/* Sierra Wireless EM74xx */
 	{QMI_QUIRK_SET_DTR(0x1199, 0x907b, 10)},/* Sierra Wireless EM74xx */
 	{QMI_QUIRK_SET_DTR(0x1199, 0x9091, 8)},	/* Sierra Wireless EM7565 */
-	{QMI_QUIRK_SET_DTR(0x1199, 0x90d9, 0)},	/* Sierra Wireless EM9191 */
+	{QMI_QUIRK_SET_DTR_QMI_8K(0x1199, 0x90d9, 0)},	/* Sierra Wireless EM9191 */
+	{QMI_QUIRK_SET_DTR_QMI_8K(0x1199, 0x90d3, 8)},	/* Sierra Wireless EM919X RmNET */	
+	{QMI_QUIRK_SET_DTR_QMI_8K(0x1199, 0x90e1, 8)},	/* Sierra Wireless EM929X RmNET */	
+	{QMI_QUIRK_SET_DTR_QMI_8K(0x1199, 0x90e3, 8)},	/* Sierra Wireless EM929X RmNET */	
 	{QMI_FIXED_INTF(0x1bbb, 0x011e, 4)},	/* Telekom Speedstick LTE II (Alcatel One Touch L100V LTE) */
 	{QMI_FIXED_INTF(0x1bbb, 0x0203, 2)},	/* Alcatel L800MA */
 	{QMI_FIXED_INTF(0x2357, 0x0201, 4)},	/* TP-LINK HSUPA Modem MA180 */
@@ -1585,4 +1761,4 @@ module_usb_driver(qmi_wwan_driver);
 MODULE_AUTHOR("Bjørn Mork <bjorn@mork.no>");
 MODULE_DESCRIPTION("Qualcomm MSM Interface (QMI) WWAN driver");
 MODULE_LICENSE("GPL");
-MODULE_VERSION("1.0.2103.1");
+MODULE_VERSION("1.10.2308.3");

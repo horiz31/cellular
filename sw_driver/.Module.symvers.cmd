@@ -1,0 +1,1 @@
+cmd_/home/brad/cellular/sw_driver/Module.symvers := sed 's/\.ko$$/\.o/' /home/brad/cellular/sw_driver/modules.order | scripts/mod/modpost -m -a  -o /home/brad/cellular/sw_driver/Module.symvers -e -i Module.symvers   -T -

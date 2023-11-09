@@ -11,6 +11,9 @@ PWD       := $(shell pwd)
 all:
 	$(MAKE) -C $(KERNELDIR) M=$(PWD)
 
+debug:
+	$(MAKE) -C $(KERNELDIR) M=$(PWD) ccflags-y="-DDEBUG"
+
 clean:
 	rm -rf *.o *.cmd *.ko *.mod.c .tmp_versions *.o.ur-safe *.symvers *.order .cache.mk .mhi* .built-in* built-in.a *.mod
 

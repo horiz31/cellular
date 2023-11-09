@@ -1,0 +1,1 @@
+cmd_/home/brad/cellular/sw_driver/modules.order := {   echo /home/brad/cellular/sw_driver/qcserial.ko;   echo /home/brad/cellular/sw_driver/usb_wwan.ko;   echo /home/brad/cellular/sw_driver/qmi_wwan.ko; :; } | awk '!x[$$0]++' - > /home/brad/cellular/sw_driver/modules.order

@@ -17,6 +17,11 @@
 
 #include "usb-wwan.h"
 
+bool debug = false;
+
+module_param(debug, bool, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
+MODULE_PARM_DESC(debug,"enable/disable driver logging");
+
 #define DRIVER_AUTHOR "Qualcomm Inc"
 #define DRIVER_DESC "Qualcomm USB Serial driver"
 
@@ -28,14 +33,17 @@ enum qcserial_layouts {
 	QCSERIAL_G1K = 1,	/* Gobi 1000 */
 	QCSERIAL_SWI = 2,	/* Sierra Wireless */
 	QCSERIAL_HWI = 3,	/* Huawei */
-	QCSERIAL_SWI_SDX55 = 4, /* Sierra Wireless SDX55 */
-	QCSERIAL_SWI_SDX55_RMNET = 5, /* Sierra Wireless SDX55 */
+	QCSERIAL_SWI_9X50 = 4, /* Sierra Wireless 9x50 USB-IF */
+	QCSERIAL_SWI_SDX55 = 5, /* Sierra Wireless SDX55 */
+	QCSERIAL_SWI_SDX55_RMNET = 6, /* Sierra Wireless SDX55 */
 };
 
 #define DEVICE_G1K(v, p) \
 	USB_DEVICE(v, p), .driver_info = QCSERIAL_G1K
 #define DEVICE_SWI(v, p) \
 	USB_DEVICE(v, p), .driver_info = QCSERIAL_SWI
+#define DEVICE_SWI_9X50(v, p) \
+	USB_DEVICE(v, p), .driver_info = QCSERIAL_SWI_9X50
 #define DEVICE_SWI_SDX55(v, p) \
 	USB_DEVICE(v, p), .driver_info = QCSERIAL_SWI_SDX55
 #define DEVICE_SWI_SDX55_RMNET(v, p) \
@@ -172,9 +180,16 @@ static const struct usb_device_id id_table_combine[] = {
 	{DEVICE_SWI(0x1199, 0x907b)},	/* Sierra Wireless EM74xx */
 	{DEVICE_SWI(0x1199, 0x9090)},	/* Sierra Wireless EM7565 QDL */
 	{DEVICE_SWI(0x1199, 0x9091)},	/* Sierra Wireless EM7565 */
+	{DEVICE_SWI(0x1199, 0x90B0)},	/* Sierra Wireless EM7565 QDL */
+	{DEVICE_SWI_9X50(0x1199, 0x90B1)},	/* Sierra Wireless EM7565 */
 	{DEVICE_SWI(0x1199, 0x90d2)},	/* Sierra Wireless EM9190 QDL */
 	{DEVICE_SWI_SDX55(0x1199, 0x90d3)},	/* Sierra Wireless EM9190 */
+	{DEVICE_SWI(0x1199, 0x90d8)},	/* Sierra Wireless EM9190 QDL */
 	{DEVICE_SWI_SDX55_RMNET(0x1199, 0x90d9)},	/* Sierra Wireless EM9190 */
+	{DEVICE_SWI(0x1199, 0x90e0)},	/* Sierra Wireless EM929x QDL */
+	{DEVICE_SWI_SDX55(0x1199, 0x90e1)},	/* Sierra Wireless EM929x */
+	{DEVICE_SWI(0x1199, 0x90e2)},	/* Sierra Wireless EM929x QDL */
+	{DEVICE_SWI_SDX55(0x1199, 0x90e3)},	/* Sierra Wireless EM929x */
 	{DEVICE_SWI(0x413c, 0x81a2)},	/* Dell Wireless 5806 Gobi(TM) 4G LTE Mobile Broadband Card */
 	{DEVICE_SWI(0x413c, 0x81a3)},	/* Dell Wireless 5570 HSPA+ (42Mbps) Mobile Broadband Card */
 	{DEVICE_SWI(0x413c, 0x81a4)},	/* Dell Wireless 5570e HSPA+ (42Mbps) Mobile Broadband Card */
@@ -303,7 +318,6 @@ static const struct usb_device_id id_table[] = {
 	{DEVICE_SWI(0x0f3d, 0x68a2)},	/* Sierra Wireless MC7700 */
 	{DEVICE_SWI(0x114f, 0x68a2)},	/* Sierra Wireless MC7750 */
 	{DEVICE_SWI(0x1199, 0x68a2)},	/* Sierra Wireless MC7710 */
-	{DEVICE_SWI(0x1199, 0x68c0)},	/* Sierra Wireless MC7304/MC7354 */
 	{DEVICE_SWI(0x1199, 0x901c)},	/* Sierra Wireless EM7700 */
 	{DEVICE_SWI(0x1199, 0x901e)},	/* Sierra Wireless EM7355 QDL */
 	{DEVICE_SWI(0x1199, 0x901f)},	/* Sierra Wireless EM7355 */
@@ -317,16 +331,15 @@ static const struct usb_device_id id_table[] = {
 	{DEVICE_SWI(0x1199, 0x9060)},	/* Sierra Wireless Modem */
 	{DEVICE_SWI(0x1199, 0x9061)},	/* Sierra Wireless Modem */
 	{DEVICE_SWI(0x1199, 0x9063)},	/* Sierra Wireless EM7305 */
-	{DEVICE_SWI(0x1199, 0x9070)},	/* Sierra Wireless MC74xx */
 	{DEVICE_SWI(0x1199, 0x9071)},	/* Sierra Wireless MC74xx */
-	{DEVICE_SWI(0x1199, 0x9078)},	/* Sierra Wireless EM74xx */
 	{DEVICE_SWI(0x1199, 0x9079)},	/* Sierra Wireless EM74xx */
-	{DEVICE_SWI(0x1199, 0x907a)},	/* Sierra Wireless EM74xx QDL */
 	{DEVICE_SWI(0x1199, 0x907b)},	/* Sierra Wireless EM74xx */
-	{DEVICE_SWI(0x1199, 0x9090)},	/* Sierra Wireless EM7565 QDL */
 	{DEVICE_SWI(0x1199, 0x9091)},	/* Sierra Wireless EM7565 */
+	{DEVICE_SWI_9X50(0x1199, 0x90B1)},	/* Sierra Wireless EM7565 USB-IF */
 	{DEVICE_SWI_SDX55(0x1199, 0x90d3)},	/* Sierra Wireless EM9190 */
 	{DEVICE_SWI_SDX55_RMNET(0x1199, 0x90d9)},	/* Sierra Wireless EM9190 */
+	{DEVICE_SWI_SDX55(0x1199, 0x90e1)},	/* Sierra Wireless EM929x */
+	{DEVICE_SWI_SDX55(0x1199, 0x90e3)},	/* Sierra Wireless EM929x */
 	{DEVICE_SWI(0x413c, 0x81a2)},	/* Dell Wireless 5806 Gobi(TM) 4G LTE Mobile Broadband Card */
 	{DEVICE_SWI(0x413c, 0x81a3)},	/* Dell Wireless 5570 HSPA+ (42Mbps) Mobile Broadband Card */
 	{DEVICE_SWI(0x413c, 0x81a4)},	/* Dell Wireless 5570e HSPA+ (42Mbps) Mobile Broadband Card */
@@ -349,8 +362,16 @@ static const struct usb_device_id id_table[] = {
 MODULE_DEVICE_TABLE(usb, id_table);
 
 static const struct usb_device_id id_table_1[] = {
+	{DEVICE_SWI(0x1199, 0x68c0)},	/* Sierra Wireless MC7304/MC7354 */
+	{DEVICE_SWI(0x1199, 0x9070)},	/* Sierra Wireless MC74xx */
+	{DEVICE_SWI(0x1199, 0x9078)},	/* Sierra Wireless EM74xx */
+	{DEVICE_SWI(0x1199, 0x907a)},	/* Sierra Wireless EM74xx QDL */
+	{DEVICE_SWI(0x1199, 0x9090)},	/* Sierra Wireless EM7565 QDL */
+	{DEVICE_SWI(0x1199, 0x90B0)},	/* Sierra Wireless EM7565 USB-IF QDL */
 	{DEVICE_SWI(0x1199, 0x90d2)},	/* Sierra Wireless EM9190 QDL */
 	{DEVICE_SWI(0x1199, 0x90d8)},	/* Sierra Wireless EM9190 QDL */
+	{DEVICE_SWI(0x1199, 0x90e0)},	/* Sierra Wireless EM929x QDL */
+	{DEVICE_SWI(0x1199, 0x90e2)},	/* Sierra Wireless EM929x QDL */
 	{ }				/* Terminating entry */
 };
 MODULE_DEVICE_TABLE(usb, id_table_1);
@@ -392,6 +413,7 @@ static int qcprobe(struct usb_serial *serial, const struct usb_device_id *id)
 {
 	struct usb_host_interface *intf = serial->interface->cur_altsetting;
 	struct device *dev = &serial->dev->dev;
+	struct usb_device *usb_dev = serial->dev;
 	int retval = -ENODEV;
 	__u8 nintf;
 	__u8 ifnum;
@@ -424,9 +446,12 @@ static int qcprobe(struct usb_serial *serial, const struct usb_device_id *id)
 				retval = 0; /* Success */
 			else
 				altsetting = 1;
-		}
-		goto done;
 
+			/* disable USB SS for QDL */
+			usb_disable_autosuspend(usb_dev);
+		}
+
+		goto done;
 	}
 
 	/* default to enabling interface */
@@ -604,7 +629,31 @@ static int qcprobe(struct usb_serial *serial, const struct usb_device_id *id)
 			break;
 		}
 		break;
-
+	case QCSERIAL_SWI_9X50:
+		/*
+		 * Sierra Wireless 9X50 USB-IF layout:
+		 * 2: AT-capable modem port
+		 * 3: NMEA
+		 * 4: DM
+		 */
+		switch (ifnum) {
+		case 2:
+			dev_dbg(dev, "Modem port found\n");
+			sendsetup = true;
+			break;
+		case 3:
+			dev_dbg(dev, "NMEA GPS interface found\n");
+			sendsetup = true;
+			break;
+		case 4:
+			dev_dbg(dev, "DM/DIAG interface found\n");
+			break;
+		default:
+			/* don't claim any unsupported interface */
+			altsetting = -1;
+			break;
+		}
+		break;
 	default:
 		dev_err(dev, "unsupported device layout type: %lu\n",
 			id->driver_info);
@@ -731,4 +780,4 @@ module_usb_serial_driver(serial_drivers, id_table_combine);
 MODULE_AUTHOR(DRIVER_AUTHOR);
 MODULE_DESCRIPTION(DRIVER_DESC);
 MODULE_LICENSE("GPL v2");
-MODULE_VERSION("1.7.2101.1");
+MODULE_VERSION("1.11.2302.2");

@@ -1,11 +1,18 @@
 #include <linux/module.h>
+#define INCLUDE_VERMAGIC
+#include <linux/build-salt.h>
+#include <linux/elfnote-lto.h>
 #include <linux/vermagic.h>
 #include <linux/compiler.h>
 
+BUILD_SALT;
+BUILD_LTO_INFO;
+
 MODULE_INFO(vermagic, VERMAGIC_STRING);
+MODULE_INFO(name, KBUILD_MODNAME);
 
 __visible struct module __this_module
-__attribute__((section(".gnu.linkonce.this_module"))) = {
+__section(".gnu.linkonce.this_module") = {
 	.name = KBUILD_MODNAME,
 	.init = init_module,
 #ifdef CONFIG_MODULE_UNLOAD
@@ -14,45 +21,53 @@ __attribute__((section(".gnu.linkonce.this_module"))) = {
 	.arch = MODULE_ARCH_INIT,
 };
 
-#ifdef RETPOLINE
+#ifdef CONFIG_RETPOLINE
 MODULE_INFO(retpoline, "Y");
 #endif
 
 static const struct modversion_info ____versions[]
-__used
-__attribute__((section("__versions"))) = {
-	{ 0x3c98d0cd, __VMLINUX_SYMBOL_STR(module_layout) },
-	{ 0xa6f1a069, __VMLINUX_SYMBOL_STR(usb_wwan_dtr_rts) },
-	{ 0x391987a1, __VMLINUX_SYMBOL_STR(usb_wwan_tiocmset) },
-	{ 0x2591b0e2, __VMLINUX_SYMBOL_STR(usb_wwan_tiocmget) },
-	{ 0xf8a23c9f, __VMLINUX_SYMBOL_STR(usb_wwan_chars_in_buffer) },
-	{ 0x1d54fc72, __VMLINUX_SYMBOL_STR(usb_wwan_write_room) },
-	{ 0x86aac2ae, __VMLINUX_SYMBOL_STR(usb_wwan_write) },
-	{ 0xfa9500c8, __VMLINUX_SYMBOL_STR(usb_wwan_close) },
-	{ 0x7161e9ce, __VMLINUX_SYMBOL_STR(usb_wwan_open) },
-	{ 0xb24f0be5, __VMLINUX_SYMBOL_STR(usb_wwan_resume) },
-	{ 0xd76ceca2, __VMLINUX_SYMBOL_STR(usb_wwan_suspend) },
-	{ 0xbfc710d6, __VMLINUX_SYMBOL_STR(usb_wwan_port_remove) },
-	{ 0xfaec09b, __VMLINUX_SYMBOL_STR(usb_wwan_port_probe) },
-	{ 0x50cbb710, __VMLINUX_SYMBOL_STR(usb_serial_deregister_drivers) },
-	{ 0xa059d737, __VMLINUX_SYMBOL_STR(usb_serial_register_drivers) },
-	{ 0xa054af2e, __VMLINUX_SYMBOL_STR(dev_err) },
-	{ 0xdc98c18a, __VMLINUX_SYMBOL_STR(usb_set_interface) },
-	{ 0x256b5e21, __VMLINUX_SYMBOL_STR(__dynamic_dev_dbg) },
-	{ 0xdefc71f5, __VMLINUX_SYMBOL_STR(kmalloc_caches) },
-	{ 0x8dd1990a, __VMLINUX_SYMBOL_STR(kmem_cache_alloc_trace) },
-	{ 0x37a0cba, __VMLINUX_SYMBOL_STR(kfree) },
-	{ 0x67b27ec1, __VMLINUX_SYMBOL_STR(tty_std_termios) },
-	{ 0x1fdc7df2, __VMLINUX_SYMBOL_STR(_mcount) },
+__used __section("__versions") = {
+	{ 0x4cf819e6, "module_layout" },
+	{ 0x83253110, "param_ops_bool" },
+	{ 0x1d4c55ab, "usb_wwan_dtr_rts" },
+	{ 0x85cd6ee4, "usb_wwan_tiocmset" },
+	{ 0xed75ec89, "usb_wwan_tiocmget" },
+	{ 0xca33b237, "usb_wwan_chars_in_buffer" },
+	{ 0x516d348b, "usb_wwan_write_room" },
+	{ 0x148690d9, "usb_wwan_write" },
+	{ 0x89ffeb18, "usb_wwan_close" },
+	{ 0xc8f7c98e, "usb_wwan_open" },
+	{ 0x73d12eb4, "usb_wwan_resume" },
+	{ 0x6018975d, "usb_wwan_suspend" },
+	{ 0x7f899cc5, "usb_wwan_port_remove" },
+	{ 0x1194d63c, "usb_wwan_port_probe" },
+	{ 0xaa6c041b, "usb_serial_deregister_drivers" },
+	{ 0x8f59dfff, "usb_serial_register_drivers" },
+	{ 0x54b1fac6, "__ubsan_handle_load_invalid_value" },
+	{ 0x92997ed8, "_printk" },
+	{ 0xb06a469c, "dev_driver_string" },
+	{ 0xa46d5a4f, "usb_set_interface" },
+	{ 0x583d61f9, "usb_disable_autosuspend" },
+	{ 0x4f00afd3, "kmem_cache_alloc_trace" },
+	{ 0x696f0c3, "kmalloc_caches" },
+	{ 0x37a0cba, "kfree" },
+	{ 0x5b8239ca, "__x86_return_thunk" },
+	{ 0x67b27ec1, "tty_std_termios" },
+	{ 0xbdfb6dbb, "__fentry__" },
 };
 
-static const char __module_depends[]
-__used
-__attribute__((section(".modinfo"))) =
-"depends=usb_wwan";
+MODULE_INFO(depends, "usb_wwan,usbserial");
 
+MODULE_ALIAS("usb:v1199p68C0d*dc*dsc*dp*ic*isc*ip*in*");
+MODULE_ALIAS("usb:v1199p9070d*dc*dsc*dp*ic*isc*ip*in*");
+MODULE_ALIAS("usb:v1199p9078d*dc*dsc*dp*ic*isc*ip*in*");
+MODULE_ALIAS("usb:v1199p907Ad*dc*dsc*dp*ic*isc*ip*in*");
+MODULE_ALIAS("usb:v1199p9090d*dc*dsc*dp*ic*isc*ip*in*");
+MODULE_ALIAS("usb:v1199p90B0d*dc*dsc*dp*ic*isc*ip*in*");
 MODULE_ALIAS("usb:v1199p90D2d*dc*dsc*dp*ic*isc*ip*in*");
 MODULE_ALIAS("usb:v1199p90D8d*dc*dsc*dp*ic*isc*ip*in*");
+MODULE_ALIAS("usb:v1199p90E0d*dc*dsc*dp*ic*isc*ip*in*");
+MODULE_ALIAS("usb:v1199p90E2d*dc*dsc*dp*ic*isc*ip*in*");
 MODULE_ALIAS("usb:v05C6p9211d*dc*dsc*dp*ic*isc*ip*in*");
 MODULE_ALIAS("usb:v05C6p9212d*dc*dsc*dp*ic*isc*ip*in*");
 MODULE_ALIAS("usb:v03F0p1F1Dd*dc*dsc*dp*ic*isc*ip*in*");
@@ -152,7 +167,6 @@ MODULE_ALIAS("usb:v03F0p4E1Dd*dc*dsc*dp*ic*isc*ip*in*");
 MODULE_ALIAS("usb:v0F3Dp68A2d*dc*dsc*dp*ic*isc*ip*in*");
 MODULE_ALIAS("usb:v114Fp68A2d*dc*dsc*dp*ic*isc*ip*in*");
 MODULE_ALIAS("usb:v1199p68A2d*dc*dsc*dp*ic*isc*ip*in*");
-MODULE_ALIAS("usb:v1199p68C0d*dc*dsc*dp*ic*isc*ip*in*");
 MODULE_ALIAS("usb:v1199p901Cd*dc*dsc*dp*ic*isc*ip*in*");
 MODULE_ALIAS("usb:v1199p901Ed*dc*dsc*dp*ic*isc*ip*in*");
 MODULE_ALIAS("usb:v1199p901Fd*dc*dsc*dp*ic*isc*ip*in*");
@@ -166,16 +180,15 @@ MODULE_ALIAS("usb:v1199p9056d*dc*dsc*dp*ic*isc*ip*in*");
 MODULE_ALIAS("usb:v1199p9060d*dc*dsc*dp*ic*isc*ip*in*");
 MODULE_ALIAS("usb:v1199p9061d*dc*dsc*dp*ic*isc*ip*in*");
 MODULE_ALIAS("usb:v1199p9063d*dc*dsc*dp*ic*isc*ip*in*");
-MODULE_ALIAS("usb:v1199p9070d*dc*dsc*dp*ic*isc*ip*in*");
 MODULE_ALIAS("usb:v1199p9071d*dc*dsc*dp*ic*isc*ip*in*");
-MODULE_ALIAS("usb:v1199p9078d*dc*dsc*dp*ic*isc*ip*in*");
 MODULE_ALIAS("usb:v1199p9079d*dc*dsc*dp*ic*isc*ip*in*");
-MODULE_ALIAS("usb:v1199p907Ad*dc*dsc*dp*ic*isc*ip*in*");
 MODULE_ALIAS("usb:v1199p907Bd*dc*dsc*dp*ic*isc*ip*in*");
-MODULE_ALIAS("usb:v1199p9090d*dc*dsc*dp*ic*isc*ip*in*");
 MODULE_ALIAS("usb:v1199p9091d*dc*dsc*dp*ic*isc*ip*in*");
+MODULE_ALIAS("usb:v1199p90B1d*dc*dsc*dp*ic*isc*ip*in*");
 MODULE_ALIAS("usb:v1199p90D3d*dc*dsc*dp*ic*isc*ip*in*");
 MODULE_ALIAS("usb:v1199p90D9d*dc*dsc*dp*ic*isc*ip*in*");
+MODULE_ALIAS("usb:v1199p90E1d*dc*dsc*dp*ic*isc*ip*in*");
+MODULE_ALIAS("usb:v1199p90E3d*dc*dsc*dp*ic*isc*ip*in*");
 MODULE_ALIAS("usb:v413Cp81A2d*dc*dsc*dp*ic*isc*ip*in*");
 MODULE_ALIAS("usb:v413Cp81A3d*dc*dsc*dp*ic*isc*ip*in*");
 MODULE_ALIAS("usb:v413Cp81A4d*dc*dsc*dp*ic*isc*ip*in*");
@@ -311,9 +324,16 @@ MODULE_ALIAS("usb:v1199p907Ad*dc*dsc*dp*ic*isc*ip*in*");
 MODULE_ALIAS("usb:v1199p907Bd*dc*dsc*dp*ic*isc*ip*in*");
 MODULE_ALIAS("usb:v1199p9090d*dc*dsc*dp*ic*isc*ip*in*");
 MODULE_ALIAS("usb:v1199p9091d*dc*dsc*dp*ic*isc*ip*in*");
+MODULE_ALIAS("usb:v1199p90B0d*dc*dsc*dp*ic*isc*ip*in*");
+MODULE_ALIAS("usb:v1199p90B1d*dc*dsc*dp*ic*isc*ip*in*");
 MODULE_ALIAS("usb:v1199p90D2d*dc*dsc*dp*ic*isc*ip*in*");
 MODULE_ALIAS("usb:v1199p90D3d*dc*dsc*dp*ic*isc*ip*in*");
+MODULE_ALIAS("usb:v1199p90D8d*dc*dsc*dp*ic*isc*ip*in*");
 MODULE_ALIAS("usb:v1199p90D9d*dc*dsc*dp*ic*isc*ip*in*");
+MODULE_ALIAS("usb:v1199p90E0d*dc*dsc*dp*ic*isc*ip*in*");
+MODULE_ALIAS("usb:v1199p90E1d*dc*dsc*dp*ic*isc*ip*in*");
+MODULE_ALIAS("usb:v1199p90E2d*dc*dsc*dp*ic*isc*ip*in*");
+MODULE_ALIAS("usb:v1199p90E3d*dc*dsc*dp*ic*isc*ip*in*");
 MODULE_ALIAS("usb:v413Cp81A2d*dc*dsc*dp*ic*isc*ip*in*");
 MODULE_ALIAS("usb:v413Cp81A3d*dc*dsc*dp*ic*isc*ip*in*");
 MODULE_ALIAS("usb:v413Cp81A4d*dc*dsc*dp*ic*isc*ip*in*");
@@ -329,4 +349,4 @@ MODULE_ALIAS("usb:v413Cp81D1d*dc*dsc*dp*ic*isc*ip*in*");
 MODULE_ALIAS("usb:v413Cp81D2d*dc*dsc*dp*ic*isc*ip*in*");
 MODULE_ALIAS("usb:v03F0p581Dd*dc*dsc*dp*ic*isc*ip*in*");
 
-MODULE_INFO(srcversion, "3378D53B6CEDD227835970D");
+MODULE_INFO(srcversion, "967332E3529BB9906D3D960");
